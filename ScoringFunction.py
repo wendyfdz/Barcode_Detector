@@ -3,9 +3,12 @@ from skimage import io
 import numpy as np
 import math
 from BisectorCoordinates import Bisec_coor
+from GetPixelIntesity import Get_pix_intensity
+import matplotlib.pyplot as plt
+
 
 #Get Line Segments
-barcode = io.imread('05102009104.jpg')
+barcode = io.imread('paper_artelab.jpg')
 barcodeGray = cv2.cvtColor(barcode, cv2.COLOR_BGR2GRAY)
 det = cv2.createLineSegmentDetector()
 parameters = det.detect(barcodeGray)
@@ -184,13 +187,15 @@ max_indexes = np.where(Score_Value == max_Score)
 max_toDisplay = max_indexes[0][0]
 Bisector_coordinates = Bisec_coor(max_toDisplay,Segments, barcode)
 
+pixel_intensity = Get_pix_intensity(Bisector_coordinates,barcodeGray)
+
 #Display the bisector line to check result
-Bisector_coordinates = np.array(Bisector_coordinates)
-Bisector_last_row = Bisector_coordinates.shape[0] - 1
-x0 = int(round(Bisector_coordinates[0,0]))
-y0 = int(round(Bisector_coordinates[0,1]))
-xf = int(round(Bisector_coordinates[Bisector_last_row,0]))
-yf = int(round(Bisector_coordinates[Bisector_last_row,1]))
-img = cv2.line(barcode,(x0, y0),(xf,yf),(255,0,0),3)
-io.imshow(img)
-io.show()
+# Bisector_last_row = Bisector_coordinates.shape[0] - 1
+# x0 = int(round(Bisector_coordinates[0,0]))
+# y0 = int(round(Bisector_coordinates[0,1]))
+# xf = int(round(Bisector_coordinates[Bisector_last_row,0]))
+# yf = int(round(Bisector_coordinates[Bisector_last_row,1]))
+# img = cv2.line(barcodeGray,(x0, y0),(xf,yf),(255,0,0),3)
+# io.imshow(img)
+plt.plot(pixel_intensity)
+plt.show()
