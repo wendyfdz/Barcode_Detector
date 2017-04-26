@@ -14,32 +14,46 @@ def barcode_area(Bisector_coordinates,start,end,Segments,max_segment_index):
     elif vertical_segment != 0:
         Seg_slope = (Seg_coordinates[1,0,1] - Seg_coordinates[0,0, 1]) / float((Seg_coordinates[1,0,0] - Seg_coordinates[0,0,0]))
         Seg_angle = math.atan(Seg_slope)
-    Seg_perp_angle = Seg_angle + math.pi / 2
-    x_increase = abs(seg_increase * math.cos(Seg_perp_angle))
-    y_increase = abs(seg_increase * math.sin(Seg_perp_angle))
+    # Seg_perp_angle = Seg_angle + math.pi / 2
+    # x_increase = abs(seg_increase * math.cos(Seg_perp_angle))
+    # y_increase = abs(seg_increase * math.sin(Seg_perp_angle))
     box = np.zeros([4, 2])
 
     # # Create bounding box according to the slope
     if math.isnan(Seg_slope):
-        box[0] = [Seg_coordinates[0,0,0] + x_increase, Seg_coordinates[0,0,1]]
-        box[1] = [Seg_coordinates[0,0,0] - x_increase, Seg_coordinates[0,0,1]]
-        box[2] = [Seg_coordinates[1,0,0] + x_increase, Seg_coordinates[1,0,1]]
-        box[3] = [Seg_coordinates[1,0,0] - x_increase, Seg_coordinates[1,0,1]]
+        Seg_perp_angle = Seg_angle + math.pi/2
+        x_increase = abs(seg_increase * math.cos(Seg_perp_angle))
+        box[0] = [Seg_coordinates[0,0,0] + (x_increase), Seg_coordinates[0,0,1]]
+        box[1] = [Seg_coordinates[0,0,0] - (x_increase), Seg_coordinates[0,0,1]]
+        box[2] = [Seg_coordinates[1,0,0] + (x_increase), Seg_coordinates[1,0,1]]
+        box[3] = [Seg_coordinates[1,0,0] - (x_increase), Seg_coordinates[1,0,1]]
     elif Seg_slope == 0:
+        Seg_perp_angle = Seg_angle + math.pi/2
+        y_increase = abs(seg_increase * math.sin(Seg_perp_angle))
         box[0] = [Seg_coordinates[0,0,0], Seg_coordinates[0,0,1] + y_increase]
         box[1] = [Seg_coordinates[0,0,0], Seg_coordinates[0,0,1] - y_increase]
         box[2] = [Seg_coordinates[1,0,0], Seg_coordinates[1,0,1] + y_increase]
         box[3] = [Seg_coordinates[1,0,0], Seg_coordinates[1,0,1] - y_increase]
-    elif Seg_slope > 0:
+    elif Seg_slope > 0: #Clockwise direction
+        Seg_perp_angle = Seg_angle + math.pi/2
+        x_increase = abs(seg_increase * math.cos(Seg_perp_angle))
+        y_increase = abs(seg_increase * math.sin(Seg_perp_angle))
         box[0] = [Seg_coordinates[0,0,0] - x_increase, Seg_coordinates[0,0,1] + y_increase]
-        box[1] = [Seg_coordinates[0,0,0] + x_increase, Seg_coordinates[0,0,1] - y_increase]
-        box[2] = [Seg_coordinates[1,0,0] - x_increase, Seg_coordinates[1,0,1] + y_increase]
-        box[3] = [Seg_coordinates[1,0,0] + x_increase, Seg_coordinates[1,0,1] - y_increase]
+        box[1] = [Seg_coordinates[1,0,0] - x_increase, Seg_coordinates[1,0,1] + y_increase]
+        Seg_perp_angle = math.pi /2 - Seg_angle
+        x_increase = abs(seg_increase * math.cos(Seg_perp_angle))
+        y_increase = abs(seg_increase * math.sin(Seg_perp_angle))
+        box[2] = [Seg_coordinates[1,0,0] + x_increase, Seg_coordinates[1,0,1] - y_increase]
+        box[3] = [Seg_coordinates[0,0,0] + x_increase, Seg_coordinates[0,0,1] - y_increase]
     elif Seg_slope < 0:
-        box[0] = [Seg_coordinates[0,0,0] - x_increase, Seg_coordinates[0,0,1] + y_increase]
-        box[1] = [Seg_coordinates[0,0,0] + x_increase, Seg_coordinates[0,0,1] - y_increase]
-        box[2] = [Seg_coordinates[1,0,0] - x_increase, Seg_coordinates[1,0,1] + y_increase]
-        box[3] = [Seg_coordinates[1,0,0] + x_increase, Seg_coordinates[1,0,1] - y_increase]
-    box_increase = box * 0.20
-    box = box + box_increase
+        Seg_perp_angle = Seg_angle - math.pi/2
+        x_increase = abs(seg_increase * math.cos(Seg_perp_angle))
+        y_increase = abs(seg_increase * math.sin(Seg_perp_angle))
+        box[0] = [Seg_coordinates[0,0,0] + x_increase, Seg_coordinates[0,0,1] + y_increase]
+        box[1] = [Seg_coordinates[1,0,0] + x_increase, Seg_coordinates[1,0,1] + y_increase]
+        Seg_perp_angle = Seg_angle + math.pi / 2
+        x_increase = abs(seg_increase * math.cos(Seg_perp_angle))
+        y_increase = abs(seg_increase * math.sin(Seg_perp_angle))
+        box[2] = [Seg_coordinates[1,0,0] - x_increase, Seg_coordinates[1,0,1] - y_increase]
+        box[3] = [Seg_coordinates[0,0,0] - x_increase, Seg_coordinates[0,0,1] - y_increase]
     return box
