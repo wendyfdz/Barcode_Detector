@@ -13,7 +13,6 @@ import numpy as np
 import cv2
 image_list = []
 count = 0
-
 for filename in glob.glob('/Users/wendyfernandez/PycharmProjects/images/*.jpg'): #assuming gif
     #Get Line Segments
     barcode = io.imread(filename)
@@ -193,40 +192,40 @@ for filename in glob.glob('/Users/wendyfernandez/PycharmProjects/images/*.jpg'):
     max_Score = Score_Value.max()
     max_indexes = np.where(Score_Value == max_Score)
     max_toDisplay = max_indexes[0][0]
+    max_segment = Segments[max_toDisplay]
     Bisector_coordinates = Bisec_coor(max_toDisplay,Segments, barcode)
-    Bisector_last_row = Bisector_coordinates.shape[0]-1
-
-    # pixel_intensity = Get_pix_intensity(Bisector_coordinates,barcodeGray)
-    # begining_ending = begin_end(pixel_intensity, 480)
-    # start = begining_ending[0]
-    # end = begining_ending[1]
-    # box_area = barcode_area(Bisector_coordinates,start,end,Segments,max_toDisplay)
-    ##++++++++print box_area and save it+++++++
-    # img = cv2.line(barcode, (int(box_area[0,0]), int(box_area[0,1])), (int(box_area[1,0]), int(box_area[1,1])), (255,0,0), 2)
-    # img = cv2.line(barcode, (int(box_area[1,0]), int(box_area[1,1])), (int(box_area[3,0]), int(box_area[3,1])), (255,0,0), 2)
-    # img = cv2.line(barcode, (int(box_area[2,0]), int(box_area[2,1])), (int(box_area[0,0]), int(box_area[0,1])), (255,0,0), 2)
-    # img = cv2.line(barcode, (int(box_area[3,0]), int(box_area[3,1])), (int(box_area[2,0]), int(box_area[2,1])), (255,0,0), 2)
+    pixel_intensity = Get_pix_intensity(Bisector_coordinates,barcodeGray)
+    begining_ending = begin_end(pixel_intensity, 480)
+    start = begining_ending[0]
+    end = begining_ending[1]
+    box_area = barcode_area(Bisector_coordinates,start,end,Segments,max_toDisplay)
+    #++++++++print box_area and save it+++++++
+    img = cv2.line(barcode, (int(box_area[0,0]), int(box_area[0,1])), (int(box_area[1,0]), int(box_area[1,1])), (255,0,0), 2)
+    img = cv2.line(barcode, (int(box_area[1,0]), int(box_area[1,1])), (int(box_area[2,0]), int(box_area[2,1])), (255,0,0), 2)
+    img = cv2.line(barcode, (int(box_area[2,0]), int(box_area[2,1])), (int(box_area[3,0]), int(box_area[3,1])), (255,0,0), 2)
+    img = cv2.line(barcode, (int(box_area[3,0]), int(box_area[3,1])), (int(box_area[0,0]), int(box_area[0,1])), (255,0,0), 2)
     # img = cv2.rectangle(barcode, (int(box_area[1,0]), int(box_area[1,1])), (int(box_area[2,0]), int(box_area[2,1])), (255,0,0), 2)
-    # io.imsave("/Users/wendyfernandez/PycharmProjects/artelab_results_barcode_Area/" + str(count) + ".png",img)
+    io.imsave("/Users/wendyfernandez/PycharmProjects/artelab_results_barcode_Area/" + str(count) + "_bounding_box.png",img)
 
-    ##+++++plot intesity plot and save it+++++
-    # figure = plt.figure()
-    # plt.plot(pixel_intensity)
-    # plt.savefig("/Users/wendyfernandez/PycharmProjects/artelab_results_barcode_Area/" + str(count) +"_pixel_intesity.png")
+    #+++++plot intesity plot and save it+++++
+    figure = plt.figure()
+    plt.plot(pixel_intensity)
+    plt.savefig("/Users/wendyfernandez/PycharmProjects/artelab_results_barcode_Area/" + str(count) +"_pixel_intesity.png")
 
 
     ##++++Display max segment++
-    imagen = cv2.line(barcode, (Segments[max_toDisplay, 0, 0], Segments[max_toDisplay, 0, 1]), (Segments[max_toDisplay, 0, 2], Segments[max_toDisplay, 0, 3]), (255, 0, 0), 3)
-    io.imsave("/Users/wendyfernandez/PycharmProjects/artelab_results_barcode_Area/" + str(count) + "_max_segment.png",imagen)
+    # imagen = cv2.line(barcode, (Segments[max_toDisplay, 0, 0], Segments[max_toDisplay, 0, 1]), (Segments[max_toDisplay, 0, 2], Segments[max_toDisplay, 0, 3]), (255, 0, 0), 3)
+    # io.imsave("/Users/wendyfernandez/PycharmProjects/artelab_results_barcode_Area/" + str(count) + "_max_segment.png",imagen)
 
     ##++++Display the bisector line to check result++
-    Bisector_last_row = Bisector_coordinates.shape[0] - 1
-    x0 = int(round(Bisector_coordinates[0,0]))
-    y0 = int(round(Bisector_coordinates[0,1]))
-    xf = int(round(Bisector_coordinates[Bisector_last_row,0]))
-    yf = int(round(Bisector_coordinates[Bisector_last_row,1]))
-    img = cv2.line(barcode,(x0, y0),(xf,yf),(255,0,0),3)
-    io.imsave("/Users/wendyfernandez/PycharmProjects/artelab_results_barcode_Area/" + str(count) + "_bisector_line.png", img)
-    #io.imshow(img)
+    # Bisector_last_row = Bisector_coordinates.shape[0] - 1
+    # x0 = int(round(Bisector_coordinates[0,0]))
+    # y0 = int(round(Bisector_coordinates[0,1]))
+    # xf = int(round(Bisector_coordinates[Bisector_last_row,0]))
+    # yf = int(round(Bisector_coordinates[Bisector_last_row,1]))
+    # img = cv2.line(barcode,(x0, y0),(xf,yf),(255,0,0),3)
+    # io.imsave("/Users/wendyfernandez/PycharmProjects/artelab_results_barcode_Area/" + str(count) + "_bisector_line.png", img)
+    # io.imshow(img)
+    print count
     count = count + 1
-
+    print count
