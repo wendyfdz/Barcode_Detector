@@ -1,7 +1,7 @@
 import numpy as np
 import math
 
-def Bisec_coor(max_toDisplay,Segments,barcode):
+def Bisec_coor(max_toDisplay,Segments,barcode,offset):
     #Obtain information of the Segment with max score to get the bisector center
     barcode = barcode
     max_segment = max_toDisplay
@@ -47,87 +47,63 @@ def Bisec_coor(max_toDisplay,Segments,barcode):
         x_at_ymax = (y_max - Bisector_y_intercept)/float(Bisector_slope)
 
         # x and y increments
-        Bisec_x_increment = pixel_increment * math.cos(Bisector_angle)
-        Bisec_y_increment = pixel_increment * math.sin(Bisector_angle)
+        Bisec_x_increment = abs(pixel_increment * math.cos(Bisector_angle))
+        Bisec_y_increment = abs(pixel_increment * math.sin(Bisector_angle))
 
-        if 0 < Bisector_angle < math.pi/2 or 3*math.pi < Bisector_angle < 2*math.pi: #The bisector angle is in the 1st or 4th quadrant
+        if Bisector_slope > 0: #The bisector angle is in the 1st or 4th quadrant
             #Posible cases of intercepts:
             if 0 <= y_at_xmax <= y_max and 0 <= y_at_x0 <= y_max: # only y intercepts, iterate using x limits
                 Bisector_coordinates.append([0,y_at_x0])
                 i = 0
-                while Bisector_coordinates[i][0] < x_max:
+                while (Bisector_coordinates[i][0] + Bisec_x_increment <= x_max) and (Bisector_coordinates[i][1] + Bisec_y_increment <= y_at_xmax ):
                     Bisector_coordinates.append([Bisector_coordinates[i][0] + Bisec_x_increment , Bisector_coordinates[i][1] + Bisec_y_increment])
                     i = i + 1
             elif 0 <= x_at_y0 <= x_max and 0 <= x_at_ymax <= x_max: # only x intercepts, iterate using y limits
                 Bisector_coordinates.append([x_at_y0,0])
                 i = 0
-                while Bisector_coordinates[i][1] < y_max:
+                while (Bisector_coordinates[i][0] + Bisec_x_increment <= x_at_ymax) and (Bisector_coordinates[i][1] + Bisec_y_increment <= y_max):
                     Bisector_coordinates.append([Bisector_coordinates[i][0] + Bisec_x_increment , Bisector_coordinates[i][1] + Bisec_y_increment])
                     i = i + 1
-            else: # Iterates using values of y and x
-                if 0 <= x_at_ymax <= x_max and 0 <= y_at_xmax <= y_max :
-                    Bisector_coordinates.append([x_at_ymax,y_max])
-                    i = 0
-                    while Bisector_coordinates[i][0] < x_max :
-                        Bisector_coordinates.append([Bisector_coordinates[i][0] + Bisec_x_increment, Bisector_coordinates[i][1] + Bisec_y_increment])
-                        i = i + 1
-                elif 0 <= y_at_x0 <= y_max and 0 <= x_at_y0 <= x_max:
-                    Bisector_coordinates.append([0,y_at_x0])
-                    i = 0
-                    while Bisector_coordinates[i][0] < x_at_y0:
-                        Bisector_coordinates.append([Bisector_coordinates[i][0] + Bisec_x_increment, Bisector_coordinates[i][1] + Bisec_y_increment])
-                        i = i +1
-                elif 0 <= x_at_y0 <= x_max and 0 <= y_at_xmax <= y_max:
-                    Bisector_coordinates.append([x_at_y0,0])
-                    i = 0
-                    while Bisector_coordinates[i][1] < y_at_xmax: #hice un cambio: Envez de usar for uso while
-                        Bisector_coordinates.append([Bisector_coordinates[i][0] + Bisec_x_increment, Bisector_coordinates[i][1] + Bisec_y_increment])
-                        i = i + 1
-                else:
-                    Bisector_coordinates.append([0,y_at_x0])
-                    i = 0
-                    while Bisector_coordinates[i][0] < x_at_ymax:
-                        Bisector_coordinates.append([Bisector_coordinates[i][0] + Bisec_x_increment, Bisector_coordinates[i][1] + Bisec_y_increment])
-                        i = i +1
-        elif math.pi/2 < Bisector_angle < math.pi or math.pi< Bisector_angle < 3*math.pi/2: #The bisector angle is in the 2nd or 3rd quadrant  # Posible cases of intercepts:
+            elif 0 <= x_at_y0 <= x_max and 0 <= y_at_xmax <= y_max:
+                Bisector_coordinates.append([x_at_y0,0])
+                i = 0
+                while (Bisector_coordinates[i][0] + Bisec_x_increment) <= x_max and (Bisector_coordinates[i][1] + Bisec_y_increment) <= y_max:
+                    Bisector_coordinates.append([Bisector_coordinates[i][0] + Bisec_x_increment, Bisector_coordinates[i][1] + Bisec_y_increment])
+                    i = i + 1
+            else:
+                Bisector_coordinates.append([0,y_at_x0])
+                i = 0
+                while (Bisector_coordinates[i][0] + Bisec_x_increment <=x_at_ymax) and (Bisector_coordinates[i][1] + Bisec_y_increment <= y_max):
+                    Bisector_coordinates.append([Bisector_coordinates[i][0] + Bisec_x_increment, Bisector_coordinates[i][1] + Bisec_y_increment])
+                    i = i +1
+
+        else:
             if 0 <= y_at_xmax <= y_max and 0 <= y_at_x0 <= y_max:  # only y intercepts, iterate using x limits
                 Bisector_coordinates.append([0, y_at_x0])
                 i = 0
-                while Bisector_coordinates[i][0] < x_max:
-                    Bisector_coordinates.append([Bisector_coordinates[i][0] - Bisec_x_increment, Bisector_coordinates[i][1] - Bisec_y_increment])
+                while (Bisector_coordinates[i][0] + Bisec_x_increment <=x_max) and (Bisector_coordinates[i][1] - Bisec_y_increment >= y_at_xmax):
+                    Bisector_coordinates.append([Bisector_coordinates[i][0] + Bisec_x_increment, Bisector_coordinates[i][1] - Bisec_y_increment])
                     i = i + 1
             elif 0 <= x_at_y0 <= x_max and 0 <= x_at_ymax <= x_max:  # only x intercepts, iterate using y limits
-                Bisector_coordinates.append([x_at_y0, 0])
+                Bisector_coordinates.append([x_at_ymax, y_max])
                 i = 0
-                while Bisector_coordinates[i][1] < y_max:
-                    Bisector_coordinates.append([Bisector_coordinates[i][0] - Bisec_x_increment, Bisector_coordinates[i][1] - Bisec_y_increment])
+                while (Bisector_coordinates[i][0] + Bisec_x_increment <= x_max) and (Bisector_coordinates[i][1] - Bisec_y_increment >= 0):
+                    Bisector_coordinates.append([Bisector_coordinates[i][0] + Bisec_x_increment, Bisector_coordinates[i][1] - Bisec_y_increment])
                     i = i + 1
-            else:  # Iterates using values of y and x
-                if 0 <= x_at_ymax <= x_max and 0 <= y_at_xmax <= y_max:
-                    Bisector_coordinates.append([x_at_ymax, y_max])
-                    i = 0
-                    while Bisector_coordinates[i][0] < x_max :
-                        Bisector_coordinates.append([Bisector_coordinates[i][0] - Bisec_x_increment, Bisector_coordinates[i][1] - Bisec_y_increment])
-                        i = i + 1
-                elif 0 <= y_at_x0 <= y_max and 0 <= x_at_y0 <= x_max:
-                    Bisector_coordinates.append([0, y_at_x0])
-                    i = 0
-                    while Bisector_coordinates[i][0] < x_at_y0 :
-                        Bisector_coordinates.append([Bisector_coordinates[i][0] - Bisec_x_increment, Bisector_coordinates[i][1] - Bisec_y_increment])
-                        i = i +1
-                elif 0 <= x_at_y0 <= x_max and 0 <= y_at_xmax <= y_max:
-                    Bisector_coordinates.append([x_at_y0, 0])
-                    i = 0
-                    while Bisector_coordinates[i][0] < x_max : #hice un cambio: anteriormente estaba x_at_yo y cambie por x_at_ymax
-                        Bisector_coordinates.append([Bisector_coordinates[i][0] - Bisec_x_increment, Bisector_coordinates[i][1] - Bisec_y_increment])
-                        i = i + 1
-                else:
-                    Bisector_coordinates.append([0, y_at_x0])
-                    i = 0
-                    while Bisector_coordinates[i][0] < x_at_ymax :
-                        Bisector_coordinates.append([Bisector_coordinates[i][0] - Bisec_x_increment, Bisector_coordinates[i][1] - Bisec_y_increment])
-                        i = i +1
-    Bisector_coordinates = np.array(Bisector_coordinates)
-    # last_values = Bisector_coordinates[i-1]
-    # print last_values
+            elif 0 <= x_at_ymax <= x_max and 0 <= y_at_xmax <= y_max:
+                Bisector_coordinates.append([x_at_ymax, y_max])
+                i = 0
+                while (Bisector_coordinates[i][0] + Bisec_x_increment <= x_max) and (Bisector_coordinates[i][1] - Bisec_y_increment >= 0):
+                    Bisector_coordinates.append([Bisector_coordinates[i][0] + Bisec_x_increment, Bisector_coordinates[i][1] - Bisec_y_increment])
+                    i = i + 1
+            elif 0 <= y_at_x0 <= y_max and 0 <= x_at_y0 <= x_max:
+                Bisector_coordinates.append([0, y_at_x0])
+                i = 0
+                while (Bisector_coordinates[i][0] + Bisec_x_increment <= x_at_y0) and (Bisector_coordinates[i][1] - Bisec_y_increment >=0):
+                    Bisector_coordinates.append([Bisector_coordinates[i][0] + Bisec_x_increment, Bisector_coordinates[i][1] - Bisec_y_increment])
+                    i = i +1
+
+    # Bisector_coordinates = np.array(Bisector_coordinates)
+    # # last_values = Bisector_coordinates[i-1]
+    # # print last_values
     return Bisector_coordinates

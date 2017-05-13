@@ -1,20 +1,20 @@
-import cv2
-from skimage import io
-import numpy as np
 import math
-from BisectorCoordinates import Bisec_coor
-from GetPixelIntesity import Get_pix_intensity
-from Barcode_begin_end import begin_end
-from test_final_bounding_box import barcode_area
-import matplotlib.pyplot as plt
 import glob
 from skimage import  io
 import numpy as np
 import cv2
+from Create_Several_Offsets import Bisector_offsets
+from GetPixelIntesity import pix_intesity
+from Calc_barcode_begin_end import begin_end
+import matplotlib.pyplot as plt
+from test_final_bounding_box import barcode_area
+import Save_Images
+from Sigma_start_end import start_end_index
+
 image_list = []
 count = 0
-for filename in glob.glob('/Users/wendyfernandez/PycharmProjects/images/*.jpg'): #assuming gif
-    #Get Line Segments
+for filename in glob.glob('/Users/wendyfernandez/PycharmProjects/Grocery_items/Photos_2/*.jpg'):
+#Get Line Segments
     barcode = io.imread(filename)
     barcodeGray = cv2.cvtColor(barcode, cv2.COLOR_BGR2GRAY)
     det = cv2.createLineSegmentDetector()
@@ -28,6 +28,8 @@ for filename in glob.glob('/Users/wendyfernandez/PycharmProjects/images/*.jpg'):
     Segments = parameters[0]
     NumSeg = Segments.__len__()
     Score_Value=np.zeros([NumSeg,1])
+
+    print 'LSD finished'
 
     for i in range(0,NumSeg):
         Seg_coordinates = Segments[i]
@@ -188,44 +190,48 @@ for filename in glob.glob('/Users/wendyfernandez/PycharmProjects/images/*.jpg'):
                 comparison_center[m, 0, 1] = abs(Neighbor_center[m, 0 , 1] - Seg_center[1])
                 if comparison_angle[m] <= 0.1 and comparison_length[m] <= 0.3 and comparison_center[m,0,0] <= 0.1 and comparison_center[m,0,1] <= 0.1:
                     Score_Value[i] = Score_Value[i] + 1
-
+    print "PLSD finished"
     max_Score = Score_Value.max()
     max_indexes = np.where(Score_Value == max_Score)
     max_toDisplay = max_indexes[0][0]
     max_segment = Segments[max_toDisplay]
-    Bisector_coordinates = Bisec_coor(max_toDisplay,Segments, barcode)
-    pixel_intensity = Get_pix_intensity(Bisector_coordinates,barcodeGray)
-    begining_ending = begin_end(pixel_intensity, 480)
-    start = begining_ending[0]
-    end = begining_ending[1]
-    box_area = barcode_area(Bisector_coordinates,start,end,Segments,max_toDisplay)
-    #++++++++print box_area and save it+++++++
-    img = cv2.line(barcode, (int(box_area[0,0]), int(box_area[0,1])), (int(box_area[1,0]), int(box_area[1,1])), (255,0,0), 2)
-    img = cv2.line(barcode, (int(box_area[1,0]), int(box_area[1,1])), (int(box_area[2,0]), int(box_area[2,1])), (255,0,0), 2)
-    img = cv2.line(barcode, (int(box_area[2,0]), int(box_area[2,1])), (int(box_area[3,0]), int(box_area[3,1])), (255,0,0), 2)
-    img = cv2.line(barcode, (int(box_area[3,0]), int(box_area[3,1])), (int(box_area[0,0]), int(box_area[0,1])), (255,0,0), 2)
-    # img = cv2.rectangle(barcode, (int(box_area[1,0]), int(box_area[1,1])), (int(box_area[2,0]), int(box_area[2,1])), (255,0,0), 2)
-    io.imsave("/Users/wendyfernandez/PycharmProjects/artelab_results_barcode_Area/" + str(count) + "_bounding_box.png",img)
-
-    #+++++plot intesity plot and save it+++++
-    figure = plt.figure()
-    plt.plot(pixel_intensity)
-    plt.savefig("/Users/wendyfernandez/PycharmProjects/artelab_results_barcode_Area/" + str(count) +"_pixel_intesity.png")
+    increase_barcode_cropping = math.hypot((max_segment[0, 0] - max_segment[0, 2]), (max_segment[0, 1] - max_segment[0, 3]))
+    increase_barcode_cropping_decrease = int(round(increase_barcode_cropping  * 1))
+    #print increase_barcode_cropping_decrease
+    #print max_segment
+    #print increase_barcode_cropping
 
 
-    ##++++Display max segment++
-    # imagen = cv2.line(barcode, (Segments[max_toDisplay, 0, 0], Segments[max_toDisplay, 0, 1]), (Segments[max_toDisplay, 0, 2], Segments[max_toDisplay, 0, 3]), (255, 0, 0), 3)
-    # io.imsave("/Users/wendyfernandez/PycharmProjects/artelab_results_barcode_Area/" + str(count) + "_max_segment.png",imagen)
+    offset = [0]
+    Bisector_coordinates = Bisector_offsets(max_toDisplay,Segments, barcode,offset)
+    print ' Bisector finished'
+    pixel_intensity = pix_intesity(offset,Bisector_coordinates,barcodeGray)
+    print ' Pixel_intesity finished'
+    sigma = begin_end(pixel_intensity,increase_barcode_cropping_decrease,count)
+    print 'Sigma was calculated'
+    reference_point = int(sigma.size/2)
+    print reference_point
+    start_end_position = start_end_index(sigma,reference_point,[400,5000],50)
+    print 'start-end position obtained'
+    print start_end_position
+    start_end_position = np.array(start_end_position) * 2
+    print start_end_position
+    start = start_end_position[0]
+    end = start_end_position[1]
+    Bisector_coordinates_dimension = Bisector_coordinates[0].__len__()
+    print Bisector_coordinates_dimension
+    print Bisector_coordinates[0][start], Bisector_coordinates[0][end]
+    box_area = barcode_area(offset, Bisector_coordinates,start_end_position[0],start_end_position[1], Segments, max_toDisplay,0)
+    #print 'box area finished'
+    Save_Images.draw_max_segment(barcode,Segments,max_toDisplay,count)
+    Save_Images.draw_bisector_line(barcode,Bisector_coordinates,offset,count)
+    # Save_Images.plot_intesity(pixel_intensity, offset, count)
+    Save_Images.draw_bounding_box(barcode, box_area, count)
 
-    ##++++Display the bisector line to check result++
-    # Bisector_last_row = Bisector_coordinates.shape[0] - 1
-    # x0 = int(round(Bisector_coordinates[0,0]))
-    # y0 = int(round(Bisector_coordinates[0,1]))
-    # xf = int(round(Bisector_coordinates[Bisector_last_row,0]))
-    # yf = int(round(Bisector_coordinates[Bisector_last_row,1]))
-    # img = cv2.line(barcode,(x0, y0),(xf,yf),(255,0,0),3)
-    # io.imsave("/Users/wendyfernandez/PycharmProjects/artelab_results_barcode_Area/" + str(count) + "_bisector_line.png", img)
-    # io.imshow(img)
+
+
+    # plt.plot(sigma)
+    # plt.show()
     print count
     count = count + 1
-    print count
+
